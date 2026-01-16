@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { Platform } from 'react-native';
 
 export async function callBackend() {
   const {
@@ -12,9 +13,10 @@ export async function callBackend() {
   }
 
   const accessToken = session.access_token;
-  console.log(accessToken);
   
-  await fetch("http://localhost:5000/api/user", {
+  const baseURL = Platform.OS === 'web' ? 'http://localhost:5000' : 'http://10.158.248.202:5000';
+  
+  await fetch(`${baseURL}/api/user`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,

@@ -11,7 +11,7 @@ export default function Index() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <View className="flex-1 px-4">
         {/* Top bar */}
-        <Navbar />
+        <Navbar title="Dashboard" />
 
         {/* Balance Card */}
         <BalanceCard />

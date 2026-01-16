@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 const split = () => {
   return (
     <SafeAreaView className='px-4'>
-      <Navbar/>
+      <Navbar title="Split" />
       <Text>Split</Text>
     </SafeAreaView>
   )

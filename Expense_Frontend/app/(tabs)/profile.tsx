@@ -49,7 +49,7 @@ const profile = () => {
   return (
     <SafeAreaView className='flex-1 bg-gray-50'>
       <View className='px-4 flex-1'>
-        <Navbar />
+        <Navbar title="Profile" />
         
         <View className='flex-1 justify-center items-center'>
           {user ? (

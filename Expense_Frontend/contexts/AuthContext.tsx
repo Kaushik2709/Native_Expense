@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Handle deep links for OAuth callback
     const handleDeepLink = async (urlString: string) => {
       try {
-        console.log('Handling deep link:', urlString);
+        console.log('Handling deep link');
         
         // Check if this looks like an OAuth callback
         const hasHash = urlString.includes('#');
@@ -206,7 +206,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             throw new Error('No URL in OAuth result');
           }
           
-          console.log('OAuth result URL:', resultUrl);
           
           // Extract params from hash or query string
           const hashIndex = resultUrl.indexOf('#');

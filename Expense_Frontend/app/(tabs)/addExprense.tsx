@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 const addExprense = () => {
   return (
   <SafeAreaView className='px-4'>
-      <Navbar/>
+      <Navbar title="Add Expense" />
       <Text>Add expense</Text>
     </SafeAreaView>
   )

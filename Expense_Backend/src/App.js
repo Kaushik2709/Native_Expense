@@ -5,7 +5,7 @@ import exprenseRouter from './routes/expense.route.js';
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:8081", // your frontend port
+    origin: "*", // your frontend port
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })

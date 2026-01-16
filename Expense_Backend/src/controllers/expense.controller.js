@@ -30,9 +30,9 @@ const expenseController = {
   getCurrentUser: async (req, res) => {
     try {
       const userData = await expenseServices.getCurrentUser(req);
-      console.log(userData);
       
       const saveUserData = await expenseServices.saveCurrentUser(userData);
+      
       
       return res.json({
         id: saveUserData.id,
