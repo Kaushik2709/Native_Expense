@@ -44,10 +44,10 @@ const expenseServices = {
     );
 
     const { data, error } = await supabases.auth.getUser();
-    // console.log("ERROR:", error);
+    console.log("ERROR:", error);
 
     if (error) throw error;
-    // if (!data.user) throw new Error("User not authenticated");
+    if (!data.user) throw new Error("User not authenticated");
 
     return data?.user;
   },
