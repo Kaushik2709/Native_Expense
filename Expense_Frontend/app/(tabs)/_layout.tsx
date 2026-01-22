@@ -5,15 +5,28 @@ import { IconButton } from "react-native-paper";
 import "@/global.css";
 import { useEffect } from "react";
 import { callBackend } from "@/lib/Token";
+import { useAuth } from "../../contexts/AuthContext";
+import { ActivityIndicator, View } from "react-native";
+
 
 export default function TabsLayout() {
 
+  const { session, loading } = useAuth();
 
   useEffect(() => {
     callBackend()
       .then(() => console.log("Backend called"))
       .catch(console.error);
   }, []);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#7B61FF" />
+      </View>
+    );
+  }
+
   return (
     <Tabs
       screenOptions={{
@@ -33,11 +46,13 @@ export default function TabsLayout() {
           shadowOpacity: 0.1,
           shadowRadius: 8,
           elevation: 5,
+          display: !session ? "none" : "flex",
         },
       }}
     >
       <Tabs.Screen
         name="index"
+        redirect={!session}
         options={{
           tabBarIcon: ({ color, size }) => (
             <IconButton icon="home" size={size} iconColor={color} />
@@ -47,6 +62,7 @@ export default function TabsLayout() {
 
       <Tabs.Screen
         name="overview"
+        redirect={!session}
         options={{
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="analytics" color={color} size={size} />
@@ -56,6 +72,7 @@ export default function TabsLayout() {
 
       <Tabs.Screen
         name="addExpense"
+        redirect={!session}
         options={{
           tabBarButton: (props) => <AddButton {...props} />,
         }}
@@ -63,6 +80,7 @@ export default function TabsLayout() {
 
       <Tabs.Screen
         name="split"
+        redirect={!session}
         options={{
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="call-split" color={color} size={size} />
