@@ -43,9 +43,9 @@ Stop calculating who owes what on a napkin.
 |:---:|:---:|:---:|:---:|
 | ![Dashboard](./screenshots/dashboard.png) | ![Overview](./screenshots/overview.png) | ![Add Transaction](./screenshots/add_transaction.png) | ![Split Bills](./screenshots/split_bills.png) |
 
-| **Empty State** |
-|:---:|
-| ![Empty Dashboard](./screenshots/empty_dashboard.png) |
+| **Empty State** | **Profile/Login** |
+|:---:|:---:|
+| ![Empty Dashboard](./screenshots/empty_dashboard.png) | ![Profile Login](./screenshots/profile_login.png) |
 
 ---
 
