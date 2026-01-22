@@ -3,7 +3,7 @@
 > **Experience the Future of Expense Tracking.**  
 > A premium, intuitive, and visually stunning way to manage your finances and split bills with friends.
 
-![App Banner](https://via.placeholder.com/1200x400.png?text=Native+Expense+Showcase)
+![App Banner](./screenshots/dashboard.png)
 
 ## 🌟 The X Factor
 
@@ -39,9 +39,13 @@ Stop calculating who owes what on a napkin.
 
 ## 📸 Screenshots
 
-| **Dashboard Details** | **Add Expense** | **Split Bills** | **Profile** |
+| **Dashboard** | **Overview** | **Add Transaction** | **Split Bills** |
 |:---:|:---:|:---:|:---:|
-| ![Overview](https://via.placeholder.com/250x500.png?text=Overview+Screen) | ![Add Expense](https://via.placeholder.com/250x500.png?text=Add+Expense) | ![Split Bills](https://via.placeholder.com/250x500.png?text=Split+Screen) | ![Profile](https://via.placeholder.com/250x500.png?text=Profile+Screen) |
+| ![Dashboard](./screenshots/dashboard.png) | ![Overview](./screenshots/overview.png) | ![Add Transaction](./screenshots/add_transaction.png) | ![Split Bills](./screenshots/split_bills.png) |
+
+| **Empty State** |
+|:---:|
+| ![Empty Dashboard](./screenshots/empty_dashboard.png) |
 
 ---
 
