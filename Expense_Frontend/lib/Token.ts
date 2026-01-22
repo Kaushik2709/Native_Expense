@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { Platform } from 'react-native';
-
+import BaseURL from "./BaseURL";
+// Note: This function is deprecated. Use useAuth hook from AuthContext instead
 export async function callBackend() {
   const {
     data: { session },
@@ -14,9 +15,10 @@ export async function callBackend() {
 
   const accessToken = session.access_token;
 
-  const baseURL = Platform.OS === 'web' ? 'http://localhost:5000' : 'http://10.219.100.37:5000';
 
-  await fetch(`${baseURL}/api/user`, {
+
+
+  await fetch(`${BaseURL()}/api/user`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,

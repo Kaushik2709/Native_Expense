@@ -10,10 +10,10 @@ export default function TabsLayout() {
 
 
   useEffect(() => {
-  callBackend()
-    .then(() => console.log("Backend called"))
-    .catch(console.error);
-}, []);
+    callBackend()
+      .then(() => console.log("Backend called"))
+      .catch(console.error);
+  }, []);
   return (
     <Tabs
       screenOptions={{
@@ -55,7 +55,7 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="addExprense"
+        name="addExpense"
         options={{
           tabBarButton: (props) => <AddButton {...props} />,
         }}

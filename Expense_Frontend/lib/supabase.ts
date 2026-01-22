@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Platform-specific storage adapter
 const getStorage = () => {
@@ -29,8 +30,6 @@ const getStorage = () => {
   }
   
   // For native platforms, use AsyncStorage
-  // Dynamically import to avoid SSR issues
-  const AsyncStorage = require('@react-native-async-storage/async-storage').default;
   return AsyncStorage;
 };
 

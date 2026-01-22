@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuth } from '../../contexts/AuthContext'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
-import { LinearGradient } from 'expo-linear-gradient'
+
 
 interface MenuItemProps {
   icon: keyof typeof MaterialIcons.glyphMap;
@@ -100,6 +100,7 @@ const Profile = () => {
 
         <ScrollView
           showsVerticalScrollIndicator={false}
+          className='mb-24'
         >
           {user ? (
             <>

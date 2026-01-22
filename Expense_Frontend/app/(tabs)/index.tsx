@@ -5,6 +5,7 @@ import BalanceCard from "../components/BalanceCard";
 import Navbar from "../components/Navbar";
 import { usePathname } from "expo-router";
 import Transaction from "../components/Transaction";
+import { RefreshProvider } from "@/contexts/RefreshContext";
 
 export default function Index() {
   return (
@@ -13,11 +14,10 @@ export default function Index() {
         {/* Top bar */}
         <Navbar title="Dashboard" />
 
-        {/* Balance Card */}
-        <BalanceCard />
-
-        {/* Transaction List */}
-        <Transaction />
+        <RefreshProvider>
+          <BalanceCard />
+          <Transaction />
+        </RefreshProvider>
       </View>
     </SafeAreaView>
   );

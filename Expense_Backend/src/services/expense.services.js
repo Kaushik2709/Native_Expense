@@ -11,8 +11,20 @@ const expenseServices = {
     if (error) throw new Error(error.message);
     return data;
   },
-  getExpenses: async () => {
-    const { data, error } = await supabase.from("transactions").select("*");
+  getExpenses: async (userId) => {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return data;
+  },
+  deleteExpense:async (id, userId) => {
+    const {data, error}= await supabase
+    .from("transactions")
+    .delete()
+    .eq("id",id)
+    .eq("user_id", userId);
     if (error) throw new Error(error.message);
     return data;
   },

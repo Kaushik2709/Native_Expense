@@ -3,26 +3,79 @@ import { supabase } from "../config/supabase.js";
 const expenseController = {
   addExpense: async (req, res) => {
     try {
-      const { description, amount, accounts_type } = req.body;
+      const authHeader = req.headers.authorization || "";
+      const token = authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : null;
+      if (!token) return res.status(401).json({ message: "Missing token" });
+      
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser(token);
+      if (error || !user)
+        return res.status(401).json({ message: "Invalid token" });
+
+      const { description, amount, accounts_type, category } = req.body;
+
       if (!amount || !accounts_type) {
         return res.status(400).json({ message: "All fields are required" });
       }
+
       const expense = await expenseServices.createExpense({
         description,
         amount,
         accounts_type,
+        category,
+        user_id: user.id, // ✅ comes from verified token
       });
+
       return res
         .status(201)
         .json({ message: "Expense added successfully", expense });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (err) {
+      return res.status(500).json({ message: err.message });
     }
   },
   getExpenses: async (req, res) => {
     try {
-      const expenses = await expenseServices.getExpenses();
+      const authHeader = req.headers.authorization || "";
+      const token = authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : null;
+      if (!token) return res.status(401).json({ message: "Missing token" });
+      
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser(token);
+      if (error || !user)
+        return res.status(401).json({ message: "Invalid token" });
+
+      const expenses = await expenseServices.getExpenses(user.id);
       return res.status(200).json({ expenses });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+  deleteExpense: async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization || "";
+      const token = authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : null;
+      if (!token) return res.status(401).json({ message: "Missing token" });
+      
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser(token);
+      if (error || !user)
+        return res.status(401).json({ message: "Invalid token" });
+
+      const { id } = req.params;
+      const deletedExpense = await expenseServices.deleteExpense(id, user.id);
+      return res.status(200).json({ message: "Expense deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -30,14 +83,13 @@ const expenseController = {
   getCurrentUser: async (req, res) => {
     try {
       const userData = await expenseServices.getCurrentUser(req);
-      
+
       const saveUserData = await expenseServices.saveCurrentUser(userData);
-      
-      
+
       return res.json({
         id: saveUserData.id,
         email: saveUserData.email,
-        name:saveUserData.name
+        name: saveUserData.name,
       });
     } catch (err) {
       res.status(401).json({ message: err.message });
