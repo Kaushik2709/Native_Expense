@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "nativeexpense",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
@@ -20,12 +20,12 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png",
-       "bundler": "metro"
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router",
@@ -48,7 +48,11 @@
     },
     "extra": {
       "supabaseUrl": "https://prnthftnmdneakrifcpa.supabase.co",
-      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBybnRoZnRubWRuZWFrcmlmY3BhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2Njg3MDAsImV4cCI6MjA3NTI0NDcwMH0.V3ij-ol-U462k7u2l5gqZ-f2hHyR3vmVV4tK5p0SxOo"
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBybnRoZnRubWRuZWFrcmlmY3BhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2Njg3MDAsImV4cCI6MjA3NTI0NDcwMH0.V3ij-ol-U462k7u2l5gqZ-f2hHyR3vmVV4tK5p0SxOo",
+      "router": {},
+      "eas": {
+        "projectId": "1b700c88-dc22-4f39-ba73-fff95d9b6902"
+      }
     }
   }
 }
