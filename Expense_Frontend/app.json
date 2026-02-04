@@ -7,9 +7,14 @@
     "icon": "./assets/images/icon.png",
     "scheme": "nativeexpense",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
+    },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     },
     "android": {
       "package": "com.kaushik.exprense",
@@ -51,7 +56,7 @@
       "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBybnRoZnRubWRuZWFrcmlmY3BhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk2Njg3MDAsImV4cCI6MjA3NTI0NDcwMH0.V3ij-ol-U462k7u2l5gqZ-f2hHyR3vmVV4tK5p0SxOo",
       "router": {},
       "eas": {
-        "projectId": "1b700c88-dc22-4f39-ba73-fff95d9b6902"
+        "projectId": "3c39f7f0-1b7c-4e07-b55c-e460714527e8"
       }
     }
   }

@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const extractParams = (urlString: string) => {
       const hashIndex = urlString.indexOf('#');
       const queryIndex = urlString.indexOf('?');
-      
+
       let paramsString = '';
       if (hashIndex !== -1) {
         // Tokens are in hash fragment
@@ -65,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         return null;
       }
-      
+
       // Parse the params string
       const params = new URLSearchParams(paramsString);
       return {
@@ -79,19 +79,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const handleDeepLink = async (urlString: string) => {
       try {
         console.log('Handling deep link');
-        
+
         // Check if this looks like an OAuth callback
         const hasHash = urlString.includes('#');
         const hasQuery = urlString.includes('?');
-        
+
         if (!hasHash && !hasQuery) {
           // Not an OAuth callback, just a regular deep link
           console.log('Deep link received but no OAuth params (hash or query) found - likely not an OAuth callback');
           return;
         }
-        
+
         const params = extractParams(urlString);
-        
+
         if (!params) {
           console.log('No params found in deep link after extraction');
           return;
@@ -124,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             access_token,
             refresh_token,
           });
-          
+
           if (error) {
             console.error('Error setting session:', error);
           } else {
@@ -160,7 +160,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       // Get the correct redirect URL based on the environment
       let redirectUrl: string;
-      
+
       // Check if we're in Expo Go
       if (Constants.appOwnership === 'expo') {
         // For Expo Go, use the full hostUri with port (matches what deep link receives)
@@ -178,12 +178,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // For standalone apps, use the custom scheme
         redirectUrl = Linking.createURL('/');
       }
-  
+
       console.log('Using redirect URL:', redirectUrl);
       console.log('App ownership:', Constants.appOwnership);
       console.log('Host URI:', Constants.expoConfig?.hostUri);
       console.log('Linking URI:', Constants.linkingUri);
-  
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -191,27 +191,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           skipBrowserRedirect: false,
         },
       });
-  
+
       if (error) throw error;
-  
+
       // Open the OAuth URL in browser
       if (data.url) {
         const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
-        
+
         console.log('OAuth result:', result.type);
-        
+
         if (result.type === 'success') {
           // Parse the URL to extract tokens
           const resultUrl = 'url' in result ? result.url : null;
           if (!resultUrl) {
             throw new Error('No URL in OAuth result');
           }
-          
-          
+
+
           // Extract params from hash or query string
           const hashIndex = resultUrl.indexOf('#');
           const queryIndex = resultUrl.indexOf('?');
-          
+
           let paramsString = '';
           if (hashIndex !== -1) {
             // Tokens are in hash fragment (common for OAuth)
@@ -222,7 +222,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             throw new Error('No tokens found in OAuth result URL');
           }
-          
+
           const params = new URLSearchParams(paramsString);
           const access_token = params.get('access_token');
           const refresh_token = params.get('refresh_token');
@@ -238,7 +238,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               access_token,
               refresh_token,
             });
-            
+
             if (sessionError) throw sessionError;
             console.log('Session set successfully from OAuth result');
           } else {
@@ -260,16 +260,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     try {
       console.log('Starting sign out process...');
-      
+
       // Clear session state immediately (optimistic update)
       setSession(null);
       setUser(null);
       setLoading(false);
-      
+
       // Try to sign out from Supabase - this should clear the session from storage
       try {
         const { error } = await supabase.auth.signOut();
-        
+
         if (error) {
           console.warn('Supabase signOut returned error:', error.message);
         } else {
@@ -278,18 +278,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (supabaseError: any) {
         console.warn('Error calling supabase.auth.signOut():', supabaseError.message);
       }
-      
+
       // Manually clear all Supabase auth storage keys as a fallback
       try {
         const AsyncStorage = require('@react-native-async-storage/async-storage').default;
         const allKeys = await AsyncStorage.getAllKeys();
         // Supabase stores auth tokens with keys like: sb-<project-ref>-auth-token
-        const supabaseKeys = allKeys.filter((key: string) => 
-          key.includes('supabase') || 
+        const supabaseKeys = allKeys.filter((key: string) =>
+          key.includes('supabase') ||
           key.includes('auth-token') ||
           key.startsWith('sb-')
         );
-        
+
         if (supabaseKeys.length > 0) {
           console.log('Clearing Supabase storage keys:', supabaseKeys);
           await AsyncStorage.multiRemove(supabaseKeys);
@@ -297,12 +297,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (storageError: any) {
         console.warn('Could not manually clear storage:', storageError.message);
       }
-      
+
       // Force clear state again to ensure it's cleared
       setSession(null);
       setUser(null);
       setLoading(false);
-      
+
       console.log('Sign out completed, state and storage cleared');
     } catch (error: any) {
       console.error('Error in sign out process:', error.message);
@@ -313,7 +313,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Don't throw - we've successfully cleared the local state
     }
   };
-  
+
 
   return (
     <AuthContext.Provider value={{ session, user, loading, signInWithGoogle, signOut }}>
