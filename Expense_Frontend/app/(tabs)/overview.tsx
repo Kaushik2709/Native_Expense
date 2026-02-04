@@ -262,7 +262,6 @@ const Overview = () => {
       }
 
       const data = await response.json();
-      console.log("Fetched expense data:", data);
 
       if (data.expenses && data.expenses.length > 0) {
         const processedData = processExpenseData(data.expenses);

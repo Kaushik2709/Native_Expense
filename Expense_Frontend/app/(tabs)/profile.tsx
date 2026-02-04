@@ -4,6 +4,8 @@ import Navbar from '../components/Navbar'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuth } from '../../contexts/AuthContext'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import EditProfileModal from '../components/EditProfileModal'
+import { supabase } from '../../lib/supabase'
 
 
 interface MenuItemProps {
@@ -24,28 +26,45 @@ const MenuItem: React.FC<MenuItemProps> = ({
   showChevron = true,
   iconBgColor = 'bg-gray-100',
   iconColor = '#6b7280'
-}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    activeOpacity={0.7}
-    className="flex-row items-center py-4 border-b border-gray-100"
-  >
-    <View className={`w-10 h-10 rounded-xl ${iconBgColor} items-center justify-center mr-4`}>
-      <MaterialIcons name={icon} size={22} color={iconColor} />
-    </View>
-    <View className="flex-1">
-      <Text className="text-gray-800 font-semibold text-base">{title}</Text>
-      {subtitle && <Text className="text-gray-400 text-xs mt-0.5">{subtitle}</Text>}
-    </View>
-    {showChevron && (
-      <MaterialIcons name="chevron-right" size={24} color="#d1d5db" />
-    )}
-  </TouchableOpacity>
-);
+}) => {
+
+
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      className="flex-row items-center py-4 border-b border-gray-100"
+    >
+      <View className={`w-10 h-10 rounded-xl ${iconBgColor} items-center justify-center mr-4`}>
+        <MaterialIcons name={icon} size={22} color={iconColor} />
+      </View>
+      <View className="flex-1">
+        <Text className="text-gray-800 font-semibold text-base">{title}</Text>
+        {subtitle && <Text className="text-gray-400 text-xs mt-0.5">{subtitle}</Text>}
+      </View>
+      {showChevron && (
+        <MaterialIcons name="chevron-right" size={24} color="#d1d5db" />
+      )}
+    </TouchableOpacity>
+  )
+}
 
 const Profile = () => {
   const { user, loading, signInWithGoogle, signOut } = useAuth();
   const [signingIn, setSigningIn] = React.useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = React.useState(false);
+
+  const handleUpdateSuccess = async () => {
+    // Force a refresh of user data if needed, 
+    // although supabase.auth.onAuthStateChange usually handles this.
+    // However, it might be good to manually fetch if it doesn't update immediately.
+    const { data: { user: updatedUser } } = await supabase.auth.getUser();
+    if (updatedUser) {
+      // The auth context state should ideally update automatically via onAuthStateChange
+      // but if the subscription is slow, we can just close the modal.
+    }
+  };
 
   const handleSignIn = async () => {
     try {
@@ -162,30 +181,11 @@ const Profile = () => {
                   icon="person-outline"
                   title="Edit Profile"
                   subtitle="Update your personal info"
+                  onPress={() => setIsEditModalVisible(true)}
                   iconBgColor="bg-blue-50"
                   iconColor="#3b82f6"
                 />
-                <MenuItem
-                  icon="notifications-none"
-                  title="Notifications"
-                  subtitle="Manage alerts and reminders"
-                  iconBgColor="bg-amber-50"
-                  iconColor="#f59e0b"
-                />
-                <MenuItem
-                  icon="lock-outline"
-                  title="Privacy & Security"
-                  subtitle="Password, 2FA, data"
-                  iconBgColor="bg-green-50"
-                  iconColor="#22c55e"
-                />
-                <MenuItem
-                  icon="credit-card"
-                  title="Payment Methods"
-                  subtitle="Cards and bank accounts"
-                  iconBgColor="bg-purple-50"
-                  iconColor="#7B61FF"
-                />
+
               </View>
 
               {/* Support Section */}
@@ -264,6 +264,15 @@ const Profile = () => {
           )}
         </ScrollView>
       </View>
+
+      {user && (
+        <EditProfileModal
+          isVisible={isEditModalVisible}
+          onClose={() => setIsEditModalVisible(false)}
+          currentUser={user}
+          onUpdateSuccess={handleUpdateSuccess}
+        />
+      )}
     </SafeAreaView>
   )
 }

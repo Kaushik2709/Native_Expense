@@ -177,7 +177,6 @@ const Transaction: React.FC<TransactionProps> = ({ onExternalRefresh }) => {
       },
     });
     const deleteData = await deleteResponse.json();
-    console.log(deleteData);
     getExpense();
   };
 
@@ -185,6 +184,7 @@ const Transaction: React.FC<TransactionProps> = ({ onExternalRefresh }) => {
     <ScrollView
       className="flex-1 bg-gray-50 mb-20"
       contentContainerStyle={{ flexGrow: 1 }}
+      showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}

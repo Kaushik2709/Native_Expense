@@ -8,6 +8,7 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../contexts/AuthContext';
+import BaseURL from '@/lib/BaseURL';
 
 // Interfaces
 interface User {
@@ -22,8 +23,9 @@ interface SplitExpense {
   title: string;
   amount: number;
   date: string;
-  paidBy: string; // 'You' or User Name
-  splitWith: string[]; // List of names
+  payerId: string; // ID of the person who paid
+  paidBy: string; // Name of the person who paid
+  splitWith: { id: string, name: string }[]; // List of people splitting (excluding payer)
   status: 'owed' | 'owing' | 'settled';
 }
 
@@ -38,6 +40,7 @@ const Split = () => {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [payerId, setPayerId] = useState<string>('me');
   const [newPerson, setNewPerson] = useState('');
 
   const [selectedSplit, setSelectedSplit] = useState<SplitExpense | null>(null);
@@ -46,8 +49,14 @@ const Split = () => {
   // Mock Data for Splits (since no backend endpoint for splits yet)
   const [recentSplits, setRecentSplits] = useState<SplitExpense[]>([]);
 
-  const totalOwed = recentSplits.filter((s: SplitExpense) => s.status === 'owed').reduce((sum: number, s: SplitExpense) => sum + s.amount, 0);
-  const totalOwing = recentSplits.filter((s: SplitExpense) => s.status === 'owing').reduce((sum: number, s: SplitExpense) => sum + s.amount, 0);
+  const totalOwed = recentSplits.filter((s: SplitExpense) => s.status === 'owed').reduce((sum: number, s: SplitExpense) => {
+    const perPerson = s.amount / (s.splitWith.length + 1);
+    return sum + (perPerson * s.splitWith.length);
+  }, 0);
+  const totalOwing = recentSplits.filter((s: SplitExpense) => s.status === 'owing').reduce((sum: number, s: SplitExpense) => {
+    const perPerson = s.amount / (s.splitWith.length + 1);
+    return sum + perPerson;
+  }, 0);
 
   // Load splits from storage
   useEffect(() => {
@@ -87,9 +96,9 @@ const Split = () => {
 
       const accessToken = session.access_token;
       // Using the same IP as in Token.ts
-      const baseURL = Platform.OS === 'web' ? 'http://localhost:5000' : 'http://10.158.248.202:5000';
 
-      const response = await fetch(`${baseURL}/api/users`, {
+
+      const response = await fetch(`${BaseURL()}/api/users`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -124,19 +133,47 @@ const Split = () => {
   }, []);
 
   const handleCreateSplit = () => {
-    if (!amount || !description || selectedUsers.length === 0) {
-      Alert.alert('Missing Fields', 'Please fill in all fields and select at least one friend.');
+    if (!amount || !description || (selectedUsers.length === 0 && payerId !== 'me')) {
+      Alert.alert('Missing Fields', 'Please fill in all fields and select friends.');
       return;
+    }
+
+    const payerName = payerId === 'me' ? 'You' : (users.find(u => u.id === payerId)?.email?.split('@')[0] || 'Friend');
+    const splitPartners = selectedUsers
+      .filter(id => id !== payerId)
+      .map(id => ({
+        id,
+        name: id === 'me' ? 'You' : (users.find(u => u.id === id)?.email?.split('@')[0] || 'Friend')
+      }));
+
+    if (splitPartners.length === 0 && payerId === 'me') {
+      Alert.alert('Selection Required', 'Please select at least one friend to split with.');
+      return;
+    }
+
+    // If payer is 'me', we are owed. If payer is someone else and we are in split, we owe.
+    let status: 'owed' | 'owing' | 'settled' = 'settled';
+    if (payerId === 'me') {
+      status = 'owed';
+    } else if (selectedUsers.includes('me')) {
+      status = 'owing';
     }
 
     const newSplit: SplitExpense = {
       id: Date.now().toString(),
       title: description,
       amount: parseFloat(amount),
-      date: new Date().toLocaleDateString('en-US', { hour: 'numeric', minute: 'numeric' }), // Better date formatting
-      paidBy: 'You',
-      splitWith: selectedUsers.map(id => users.find(u => u.id === id)?.email.split('@')[0] || 'Friend'),
-      status: 'owed'
+      date: new Date().toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric'
+      }),
+      payerId: payerId,
+      paidBy: payerName,
+      splitWith: splitPartners,
+      status: status
     };
 
     const updatedSplits = [newSplit, ...recentSplits];
@@ -147,6 +184,7 @@ const Split = () => {
     setAmount('');
     setDescription('');
     setSelectedUsers([]);
+    setPayerId('me');
   };
 
   const toggleUserSelection = (userId: string) => {
@@ -164,12 +202,6 @@ const Split = () => {
 
   const handleAddPerson = () => {
     if (!newPerson.trim()) return;
-
-    // Check if already exists (simple name check)
-    if (users.some(u => u.email.split('@')[0].toLowerCase() === newPerson.trim().toLowerCase())) {
-      Alert.alert('User already exists');
-      return;
-    }
 
     const newUser: User = {
       id: Date.now().toString(),
@@ -220,12 +252,14 @@ const Split = () => {
         <Text className="font-bold text-gray-900 text-lg tracking-tight">{item.title}</Text>
         <Text className="text-gray-400 text-xs font-medium">{item.date}</Text>
         <Text className="text-gray-500 text-xs mt-1">
-          {item.status === 'owed' ? `Split with ${item.splitWith.join(', ')}` : `Paid by ${item.paidBy}`}
+          {item.status === 'owed'
+            ? `Split with ${Array.isArray(item.splitWith) ? item.splitWith.map(s => typeof s === 'string' ? s : (s.name || 'Friend')).join(', ') : ''}`
+            : `Paid by ${item.paidBy || 'Unknown'}`}
         </Text>
       </View>
       <View className="items-end">
         <Text className={`font-bold text-xl ${item.status === 'owed' ? 'text-emerald-600' : 'text-red-500'}`}>
-          {item.status === 'owed' ? '+' : '-'}${item.amount.toFixed(2)}
+          {item.status === 'owed' ? '+' : '-'}₹{item.amount.toLocaleString('en-IN')}
         </Text>
         <View className={`px-2 py-1 rounded-md mt-1 ${item.status === 'owed' ? 'bg-emerald-100' : 'bg-red-100'}`}>
           <Text className={`text-[10px] font-bold uppercase tracking-wider ${item.status === 'owed' ? 'text-emerald-700' : 'text-red-700'}`}>
@@ -241,8 +275,12 @@ const Split = () => {
     const perPerson = split.amount / totalPeople;
 
     return [
-      { name: split.paidBy, amount: perPerson, isPayer: true },
-      ...split.splitWith.map(name => ({ name, amount: perPerson, isPayer: false }))
+      { name: split.paidBy || 'You', amount: perPerson, isPayer: true },
+      ...split.splitWith.map(s => ({
+        name: typeof s === 'string' ? s : (s.name || 'Friend'),
+        amount: perPerson,
+        isPayer: false
+      }))
     ];
   };
 
@@ -265,7 +303,7 @@ const Split = () => {
                 <MaterialIcons name="arrow-upward" size={20} color="white" />
               </View>
               <Text className="text-emerald-50 text-sm font-medium mb-1 tracking-wide">Owed to you</Text>
-              <Text className="text-white text-3xl font-bold">${totalOwed.toFixed(2)}</Text>
+              <Text className="text-white text-3xl font-bold">₹{totalOwed.toLocaleString('en-IN')}</Text>
             </LinearGradient>
 
             <LinearGradient
@@ -279,7 +317,7 @@ const Split = () => {
                 <MaterialIcons name="arrow-downward" size={20} color="white" />
               </View>
               <Text className="text-red-50 text-sm font-medium mb-1 tracking-wide">You Owe</Text>
-              <Text className="text-white text-3xl font-bold">${totalOwing.toFixed(2)}</Text>
+              <Text className="text-white text-3xl font-bold">₹{totalOwing.toLocaleString('en-IN')}</Text>
             </LinearGradient>
           </View>
 
@@ -364,9 +402,9 @@ const Split = () => {
                   <View className="mb-8 items-center">
                     <Text className="text-gray-500 font-medium mb-4 uppercase text-xs tracking-wider">How much was it?</Text>
                     <View className="flex-row items-end">
-                      <Text className="text-4xl font-bold text-gray-400 mb-2">$</Text>
+                      <Text className="text-4xl font-bold text-gray-400 mb-2">₹</Text>
                       <TextInput
-                        placeholder="0.00"
+                        placeholder="0"
                         placeholderTextColor="#d1d5db"
                         keyboardType="numeric"
                         value={amount}
@@ -375,10 +413,10 @@ const Split = () => {
                         style={{ lineHeight: 70 }}
                       />
                     </View>
-                    {amount && selectedUsers.length > 0 && (
+                    {amount && (selectedUsers.length > 0 || payerId !== 'me') && (
                       <View className="bg-purple-50 px-4 py-2 rounded-full mt-4 flex-row items-center border border-purple-100">
                         <Text className="text-purple-700 font-semibold mr-1">
-                          ${(parseFloat(amount) / (selectedUsers.length + 1)).toFixed(2)}
+                          ₹{(parseFloat(amount) / (selectedUsers.length + 1)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                         </Text>
                         <Text className="text-purple-400 text-xs">per person</Text>
                       </View>
@@ -424,34 +462,27 @@ const Split = () => {
                       </TouchableOpacity>
                     </View>
 
-                    {loading ? (
-                      <ActivityIndicator color="#7c3aed" className="my-4" />
-                    ) : (
-                      <View className="flex-row flex-wrap gap-2">
-                        <TouchableOpacity
-                          onPress={() => { }}
-                          className="px-5 py-3 rounded-xl bg-purple-100 border border-purple-300 mb-2"
-                        >
-                          <Text className="text-purple-800 font-bold">You</Text>
-                        </TouchableOpacity>
-                        {users.map(user => (
-                          <TouchableOpacity
-                            key={user.id}
-                            onPress={() => toggleUserSelection(user.id)}
-                            className={`px-5 py-3 rounded-xl border mb-2 transition-all ${selectedUsers.includes(user.id)
-                              ? 'bg-purple-600 border-purple-600 shadow-md shadow-purple-200'
-                              : 'bg-white border-gray-200'
-                              }`}
-                          >
-                            <Text className={`font-semibold ${selectedUsers.includes(user.id) ? 'text-white' : 'text-gray-600'
-                              }`}>
-                              {user.email.split('@')[0]}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
+
                   </View>
+
+                  {/* Who Paid Section */}
+                  <View className="mb-6">
+                    <Text className="text-gray-500 font-medium mb-3 uppercase text-xs tracking-wider">Who paid?</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-2">
+                      {users.filter(u => selectedUsers.includes(u.id)).map(user => (
+                        <TouchableOpacity
+                          key={user.id}
+                          onPress={() => setPayerId(user.id)}
+                          className={`px-6 py-3 rounded-full border ${payerId === user.id ? 'bg-emerald-600 border-emerald-600' : 'bg-white border-gray-200'}`}
+                        >
+                          <Text className={`font-bold ${payerId === user.id ? 'text-white' : 'text-gray-600'}`}>
+                            {user.email?.split('@')[0] || user.email || 'Friend'}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+
                 </ScrollView>
 
                 <TouchableOpacity
@@ -498,8 +529,7 @@ const Split = () => {
                   </View>
 
                   <View className="flex-row items-end mb-8 border-b border-gray-100 pb-8">
-                    <Text className="text-5xl font-bold text-gray-900 mr-2">${selectedSplit.amount.toFixed(0)}</Text>
-                    <Text className="text-2xl font-bold text-gray-400 mb-1.5">.{selectedSplit.amount.toFixed(2).split('.')[1]}</Text>
+                    <Text className="text-5xl font-bold text-gray-900 mr-2">₹{selectedSplit.amount.toLocaleString('en-IN')}</Text>
                   </View>
 
                   <Text className="text-gray-400 font-bold mb-4 uppercase text-xs tracking-widest">Details</Text>
@@ -517,7 +547,7 @@ const Split = () => {
                           </LinearGradient>
                           <Text className="font-semibold text-gray-700 text-base">{person.name} {person.isPayer && '(Paid)'}</Text>
                         </View>
-                        <Text className="font-bold text-gray-900 text-base">${person.amount.toFixed(2)}</Text>
+                        <Text className="font-bold text-gray-900 text-base">₹{person.amount.toLocaleString('en-IN')}</Text>
                       </View>
                     ))}
                   </View>

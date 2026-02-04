@@ -40,7 +40,7 @@ const BalanceCard: React.FC<BalanceCardProps> = ({ onExternalRefresh }) => {
       }
 
       const data = await response.json();
-  
+  ``
 
       if (!data.expenses || !Array.isArray(data.expenses)) {
         console.error("Invalid data format, expected {expenses: []}");

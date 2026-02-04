@@ -13,7 +13,11 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/api',exprenseRouter);
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok", message: "Expense Backend is running!" });
+});
+
+app.use('/api', exprenseRouter);
 
 
 export default app;
